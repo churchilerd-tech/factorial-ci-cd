@@ -1,4 +1,4 @@
- name: Java Build Test Deploy
+name: Java Build Test Deploy
 
 on:
   push:
@@ -7,10 +7,6 @@ on:
   pull_request:
 
 jobs:
-
-  # =========================
-  # 1. BUILD + DOCKER
-  # =========================
   build:
     runs-on: ubuntu-latest
 
@@ -45,10 +41,6 @@ jobs:
       - name: Push Docker image
         run: docker push ghcr.io/${{ github.repository_owner }}/factorial-app:latest
 
-
-  # =========================
-  # 2. TEST
-  # =========================
   test:
     needs: build
     runs-on: ubuntu-latest
@@ -70,10 +62,6 @@ jobs:
       - name: Run JUnit 5 tests
         run: mvn test
 
-
-  # =========================
-  # 3. DEPLOY
-  # =========================
   deploy:
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
