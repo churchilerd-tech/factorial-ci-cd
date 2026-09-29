@@ -2,70 +2,27 @@
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-
   test:
-    name: Test
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v5
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
-          distribution: temurin
           java-version: '17'
+          distribution: 'temurin'
           cache: maven
 
-      - name: Run tests
+      - name: Test
         run: mvn test
 
-
-  build:
-    name: Build
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: maven
-
-      - name: Build JAR
-        run: mvn clean package -DskipTests
-
-      - name: Upload JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: factorial-jar
-          path: target/*.jar
-
-
-  deploy:
-    name: Deploy
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download JAR
-        uses: actions/download-artifact@v4
-        with:
-          name: factorial-jar
-          path: deploy
-
-      - name: Deploy application
-        run: |
-          echo "Deploying Factorial application..."
-          ls -l deploy
-          echo "Deployment successful!"
+      - name: Build
+        run: mvn package
