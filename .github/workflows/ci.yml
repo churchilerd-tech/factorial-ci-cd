@@ -1,12 +1,6 @@
  name: Java CI/CD
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push]
 
 jobs:
   test:
@@ -16,15 +10,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
 
-      - name: Run tests
+      - name: Run Tests
         run: mvn test
 
-      - name: Build project
+      - name: Build
         run: mvn package
