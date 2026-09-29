@@ -1,27 +1,22 @@
- name: Java Build Test Deploy
+name: Java Build
 
 on:
   push:
-  pull_request:
+    branches:
+      - main
 
 jobs:
-
-  # -------------------------
-  # 1. BUILD
-  # -------------------------
   build:
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
-      packages: write
 
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
@@ -30,67 +25,3 @@ jobs:
 
       - name: Build Java project
         run: mvn clean package -DskipTests
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build Docker image
-        run: docker build -t ghcr.io/${{ github.repository_owner }}/factorial-app:latest .
-
-      - name: Push Docker image
-        run: docker push ghcr.io/${{ github.repository_owner }}/factorial-app:latest
-
-
-  # -------------------------
-  # 2. TEST
-  # -------------------------
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-
-      - name: Run JUnit tests
-        run: mvn test
-
-
-  # -------------------------
-  # 3. DEPLOY
-  # -------------------------
-  deploy:
-    needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: self-hosted
-
-    steps:
-
-      - name: Pull latest Docker image
-        run: docker pull ghcr.io/${{ github.repository_owner }}/factorial-app:latest
-
-      - name: Remove old container
-        shell: powershell
-        run: |
-          docker rm -f factorial-container
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "No old container found"
-          }
-
-      - name: Run new container
-        run: docker run -d --name factorial-container -p 8080:8080 ghcr.io/${{ github.repository_owner }}/factorial-app:latest
